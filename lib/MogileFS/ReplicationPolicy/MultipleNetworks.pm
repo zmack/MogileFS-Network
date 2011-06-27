@@ -118,7 +118,7 @@ sub replicate_to {
         ! $on_dev{$_->devid} &&
         ! $failed->{$_->devid} &&
         $_->should_get_replicated_files
-    } MogileFS::Device->devices;
+    } Mgd::device_factory()->get_all;
 
     return TEMP_NO_ANSWER unless @all_dests;
 
