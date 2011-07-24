@@ -26,7 +26,7 @@ use Net::Netmask;
 use Net::Patricia;
 use MogileFS::Config;
 
-our $VERSION = "0.03";
+our $VERSION = "0.04";
 
 use constant DEFAULT_RELOAD_INTERVAL => 60;
 
