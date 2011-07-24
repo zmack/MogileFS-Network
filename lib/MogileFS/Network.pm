@@ -1,5 +1,24 @@
 package MogileFS::Network;
 
+=head1 NAME
+
+MogileFS::Network - Network awareness and extensions for MogileFS::Server
+
+=head1 DESCRIPTION
+
+This collection of modules adds multiple network awareness to the MogileFS
+server. It provides two replication policies, 'MultipleNetworks' and
+'HostsPerNetwork'; and also provides a plugin 'ZoneLocal' that causes
+get_paths queries to be returned in a prioritized order based on locality of
+storage.
+
+For information on configuring a location-aware installation of MogileFS
+please check out the MogileFS wiki.
+
+L<http://code.google.com/p/mogilefs/wiki/ConfigureMultiNet>
+
+=cut
+
 use strict;
 use warnings;
 
@@ -95,5 +114,19 @@ sub test_config {
 
     $next_reload = 0;
 }
+
+=head1 COPYRIGHT
+
+Copyright 2011 - Jonathan Steinert
+
+=head1 AUTHOR
+
+Jonathan Steinert
+
+=head1 LICENSE
+
+This module is licensed under the same terms as Perl itself.
+
+=cut
 
 1;
