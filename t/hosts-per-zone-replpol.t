@@ -10,7 +10,7 @@ use MogileFS::Util qw(error_code);
 use MogileFS::ReplicationPolicy::HostsPerNetwork;
 use MogileFS::Test;
 
-plan tests => 13;
+plan tests => 14;
 
 # already good.
 is(rr("min=2  h1[d1=X d2=_] h2[d3=X d4=_]"),
