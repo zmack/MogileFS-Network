@@ -10,6 +10,7 @@ WriteMakefile(
     PREREQ_PM               => {
         'Net::Netmask' => 0,
         'Net::Patricia' => 0,
+        'MogileFS::Server' => '2.50',
     },
 );
 
