@@ -32,6 +32,7 @@ use constant DEFAULT_RELOAD_INTERVAL => 60;
 
 my $trie = Net::Patricia->new(); # Net::Patricia object used for cache and lookup.
 my $next_reload = 0;             # Epoch time at or after which the trie expires and must be regenerated.
+my $has_cached = MogileFS::Config->can('server_setting_cached');
 
 sub zone_for_ip {
     my $class = shift;
@@ -97,6 +98,11 @@ sub check_cache {
 # This is a separate subroutine so I can redefine it at test time.
 sub get_setting {
     my $key = shift;
+    if ($has_cached) {
+        my $val = MogileFS::Config->server_setting_cached($key);
+        return $val if $val;
+    }
+    # Fall through to the server in case we don't have a cached value yet.
     return MogileFS::Config->server_setting($key);
 }
 
