@@ -25,7 +25,8 @@ sub load {
 
         @$sorted_devs = prioritize_devs_current_zone(
                         $MogileFS::REQ_client_ip,
-                        MogileFS::Worker::Query::sort_devs_by_utilization(@$devices)
+                        \&MogileFS::Worker::Query::sort_devs_by_utilization,
+                        @$devices
                         );
 
         return 1;
@@ -37,7 +38,8 @@ sub load {
 
         @$sorted_devs = prioritize_devs_current_zone(
                         $MogileFS::REQ_client_ip,
-                        MogileFS::Worker::Query::sort_devs_by_freespace(@$devices)
+                        \&MogileFS::Worker::Query::sort_devs_by_freespace,
+                        @$devices
                         );
 
         return 1;
@@ -49,6 +51,7 @@ sub load {
 
         my @sorted = prioritize_devs_current_zone(
                      MogileFS::Config->config('local_network'),
+                     sub { return @_; },
                      map { $devs->{$_} } @$choices);
         @$choices  = map { $_->id } @sorted;
 
@@ -90,6 +93,7 @@ sub unload {
 
 sub prioritize_devs_current_zone {
     my $local_ip = shift;
+    my $sorter   = shift;
     my $current_zone = MogileFS::Network->zone_for_ip($local_ip);
     error("Cannot find current zone for local ip $local_ip")
         unless defined $current_zone;
@@ -110,7 +114,7 @@ sub prioritize_devs_current_zone {
         }
     }
 
-    return @this_zone, @other_zone;
+    return $sorter->(@this_zone), $sorter->(@other_zone);
 }
 
 # TODO: This could be further improved by making split lists as with above,
