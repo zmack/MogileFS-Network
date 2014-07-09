@@ -10,7 +10,7 @@ use MogileFS::Util qw(error_code);
 use MogileFS::ReplicationPolicy::HostsPerNetwork;
 use MogileFS::Test;
 
-plan tests => 14;
+plan tests => 15;
 
 # already good.
 is(rr("min=2  h1[d1=X d2=_] h2[d3=X d4=_]"),
@@ -71,8 +71,21 @@ is(rr("min=3 h1[d1=_ d2=X] h2[d3=X d4=X]"),
 is(rr("min=2  h1[d1=X d2=_] h2=down[d3=_ d4=_] h3[d5=! d6=_]"),
    "ideal(6)");
 
+# be happy with 3 copies, even though two are on same host (that's our max unique hosts)
+is(rr("min=2 h1[d1=X d2=_] h2[d3=_ d4=_]"),
+   "ideal(3,4)");
+
+# be happy with 3 copies, even though two are on same host (that's our max unique hosts)
+is(rr("min=2 h1[d1=X d2=_] f2[d3=_]", { one => 1, two => 1 }),
+   "ideal(3)");
+
+# be happy with 3 copies, even though two are on same host (that's our max unique hosts)
+is(rr("min=2 h1[d1=X d2=X] f2[d3=_]", { one => 1, two => 1 }),
+   "ideal(3)");
+
 sub rr {
-    my ($state) = @_;
+    my $state = $_[0];
+    my $hosts_per_zone = $_[1];
     my $ostate = $state; # original
 
     MogileFS::Factory::Host->t_wipe;
@@ -94,14 +107,19 @@ sub rr {
     my $parse_error = sub {
         die "Can't parse:\n   $ostate\n"
     };
-    while ($state =~ s/\bh(\d+)(?:=(.+?))?\[(.+?)\]//) {
-        my ($n, $opts, $devstr) = ($1, $2, $3);
+    while ($state =~ s/\b(h|f)(\d+)(?:=(.+?))?\[(.+?)\]//) {
+        my ($type, $n, $opts, $devstr) = ($1, $2, $3, $4);
+        my $host_ip = "127.0.0.1";
         $opts ||= "";
         die "dup host $n" if $hosts->{$n};
 
+        if ($type eq "f") {
+          $host_ip = "10.0.0.1"
+        }
+
         my $h = $hosts->{$n} = $hfac->set({ hostid => $n,
             status => ($opts || "alive"), observed_state => "reachable",
-            hostname => $n, hostip => "127.0.0.1" });
+            hostname => $n, hostip => $host_ip });
 
         foreach my $ddecl (split(/\s+/, $devstr)) {
             $ddecl =~ /^d(\d+)=([_X!])(?:,(\w+))?$/
@@ -124,11 +142,17 @@ sub rr {
 
     my $polclass = "MogileFS::ReplicationPolicy::HostsPerNetwork";
 
-    my $pol = $polclass->new(hosts_per_zone => { one => $min });
+    if (!defined($hosts_per_zone)) {
+      $hosts_per_zone = { one => $min };
+    }
+
+
+    my $pol = $polclass->new(hosts_per_zone => $hosts_per_zone);
 
     MogileFS::Network->test_config(
         zone_one      => '127.0.0.0/16',
-        network_zones => 'one',
+        zone_two      => '10.0.0.0/16',
+        network_zones => 'one,two',
     );
 
     my $rr = $pol->replicate_to(
