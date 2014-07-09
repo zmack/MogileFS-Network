@@ -10,7 +10,7 @@ use MogileFS::Util qw(error_code);
 use MogileFS::ReplicationPolicy::HostsPerNetwork;
 use MogileFS::Test;
 
-plan tests => 15;
+plan tests => 20;
 
 # already good.
 is(rr("min=2  h1[d1=X d2=_] h2[d3=X d4=_]"),
@@ -75,13 +75,20 @@ is(rr("min=2  h1[d1=X d2=_] h2=down[d3=_ d4=_] h3[d5=! d6=_]"),
 is(rr("min=2 h1[d1=X d2=_] h2[d3=_ d4=_]"),
    "ideal(3,4)");
 
-# be happy with 3 copies, even though two are on same host (that's our max unique hosts)
 is(rr("min=2 h1[d1=X d2=_] f2[d3=_]", { one => 1, two => 1 }),
    "ideal(3)");
 
-# be happy with 3 copies, even though two are on same host (that's our max unique hosts)
 is(rr("min=2 h1[d1=X d2=X] f2[d3=_]", { one => 1, two => 1 }),
    "ideal(3)");
+
+is(rr("min=3 h1[d1=X d2=_] f2[d3=_ d4=_ d5=_]", { one => 2, two => 1 }),
+   "ideal(3,4,5)");
+
+is(rr("min=1 h1[d1=X d2=_] f2[d3=_ d4=_ d5=_]", { one => 1, two => 1 }),
+   "ideal(3,4,5)");
+
+is(rr("min=1 h1[d1=X d2=_] f2[d3=X d4=_ d5=_]", { one => 1, two => 1 }),
+   "all_good");
 
 sub rr {
     my $state = $_[0];
