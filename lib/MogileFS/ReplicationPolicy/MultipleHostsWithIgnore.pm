@@ -13,8 +13,7 @@ sub new {
 
 sub new_from_policy_args {
     my ($class, $argref) = @_;
-    # Note: "MultipleHosts()" is okay, in which case the 'mindevcount'
-    # on the class is used.  (see below)
+
     $$argref =~ s/^\s* \( \s* (\d*) \s* \) \s*//x
         or die "$class failed to parse args: $$argref";
       
@@ -65,7 +64,6 @@ sub replicate_to {
     }
 
     my $uniq_hosts_on    = scalar keys %on_host;
-    my @keys = keys $all_devs;
     my $total_uniq_hosts = unique_hosts($all_devs, \%ignore_dev);
 
     # if we are on two hosts but 10 devices, you want to weaken the number of
