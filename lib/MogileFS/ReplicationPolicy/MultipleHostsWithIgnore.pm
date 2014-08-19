@@ -14,12 +14,12 @@ sub new {
 sub new_from_policy_args {
     my ($class, $argref) = @_;
 
-    $$argref =~ s/^\s* \( \s* (\d*) \s* \) \s*//x
+    $$argref =~ s/^\s* \( \s* ([\d,]*) \s* \) \s*//x
         or die "$class failed to parse args: $$argref";
-      
+
     my @args = split /\s*,\s*/, $1;
 
-    return $class->new(@args)
+    return $class->new([@args]);
 }
 
 sub mindevcount     { $_[0]{mindevcount} }

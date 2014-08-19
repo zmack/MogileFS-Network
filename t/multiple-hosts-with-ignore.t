@@ -100,9 +100,10 @@ sub rr {
     }
     $parse_error->() if $state =~ /\S/;
 
-    my $polclass = "MogileFS::ReplicationPolicy::MultipleHostsWithIgnore";
+    # my $polclass = "MogileFS::ReplicationPolicy::MultipleHostsWithIgnore";
+    # my $pol = $polclass->new($ignore_devices);
 
-    my $pol = $polclass->new($ignore_devices);
+    my $pol = MogileFS::ReplicationPolicy->new_from_policy_string("MultipleHostsWithIgnore(" . join(",", @$ignore_devices) . ")");
     my $rr = $pol->replicate_to(
                                 fid      => 1,
                                 on_devs  => $on_devs,
