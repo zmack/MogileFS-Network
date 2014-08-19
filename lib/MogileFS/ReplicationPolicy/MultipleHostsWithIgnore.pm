@@ -56,7 +56,7 @@ sub replicate_to {
     # see which and how many unique hosts we're already on.
     my %on_dev;
     my %on_host;
-    my %ignore_dev = map { $_ => 1 } $ignore_devices;
+    my %ignore_dev = map { $_ => 1 } @$ignore_devices;
 
     foreach my $dev (@$on_devs) {
         $on_host{$dev->hostid} = 1;
