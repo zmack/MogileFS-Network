@@ -3,6 +3,7 @@
 use strict;
 use warnings;
 use Test::More;
+use Test::Exception;
 use Data::Dumper;
 
 use MogileFS::Test;
@@ -17,6 +18,8 @@ if (!$sto) {
 }
 my $store = Mgd::get_store;
 isa_ok($store, 'MogileFS::Store');
+
+lives_ok { $store->create_table("deleted_key") } "Created the deleted_key table";
 
 # Register our plugin
 MogileFS::Plugin::RecordDeletes->load;
@@ -49,6 +52,12 @@ ok($fidid, "fid id is $fidid");
 my $fid = MogileFS::FID->new($fidid);
 ok($fid->exists, "Fid has been created.");
 
+# Run the query worker's delete code.
 ok($query->cmd_delete({ domain => "test_domain", key => "test_key" }), "Deleted the key");
+
+# Make sure our deleted key was updated.
+my @deleted_key = eval { $store->dbh->selectall_arrayref("SELECT fid, dmid, dkey FROM deleted_key"); };
+is(scalar(@deleted_key), 1, "Only one deleted key row");
+is_deeply(@deleted_key, [ [ 1, 1, "test_key" ] ], "Returned row has the right value");
 
 done_testing();
